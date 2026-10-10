@@ -134,6 +134,9 @@ EDITS = [
      'transcripts="$HOME/.cursor/projects/$slug/agent-transcripts"',
      'transcripts="$HOME/.claude/projects/$slug"'),
 
+    ("docs/guide/README.md", "# The pstack guide\n",
+     "> Written for the Cursor original. For Claude Code mechanics (models, subagents, transcripts, control tools), see [the runtime notes](../../skills/poteto-mode/references/claude-code-runtime.md).\n\n# The pstack guide\n"),
+
     # --- poteto-help ---
     ("skills/poteto-help/SKILL.md", "and mention once that a Custom Mode keeps it on.", "and mention once that `/pstack:poteto-mode` applies per task."),
     ("skills/poteto-help/SKILL.md",
@@ -169,11 +172,11 @@ def main() -> None:
     for rel, old, new in EDITS:
         path = root / rel
         text = path.read_text()
+        if new and new in text:
+            continue
         if old in text:
             path.write_text(text.replace(old, new, 1))
-        elif new and new in text:
-            continue
-        elif not new and old not in text:
+        elif not new:
             continue
         else:
             failed.append((rel, old[:90]))

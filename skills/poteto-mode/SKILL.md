@@ -8,14 +8,6 @@ disable-model-invocation: true
 
 **Running in Claude Code.** Read `poteto-mode/references/claude-code-runtime.md` once per session before your first spawn. It maps every Cursor mechanism below (Task, models, cloud agents, transcripts, control skills) onto Claude Code. Sibling pstack skills, including every `principle-*` leaf, live at `<this skill's base directory>/../<name>/SKILL.md`. Read them by path, because most of them block the Skill tool.
 
-**Running in Claude Code.** Read `poteto-mode/references/claude-code-runtime.md` once per session before your first spawn. It maps every Cursor mechanism below (Task, models, cloud agents, transcripts, control skills) onto Claude Code. Sibling pstack skills, including every `principle-*` leaf, live at `<this skill's base directory>/../<name>/SKILL.md`. Read them by path, because most of them block the Skill tool.
-
-**Running in Claude Code.** Read `poteto-mode/references/claude-code-runtime.md` once per session before your first spawn. It maps every Cursor mechanism below (Task, models, cloud agents, transcripts, control skills) onto Claude Code. Sibling pstack skills, including every `principle-*` leaf, live at `<this skill's base directory>/../<name>/SKILL.md`. Read them by path, because most of them block the Skill tool.
-
-**Running in Claude Code.** Read `poteto-mode/references/claude-code-runtime.md` once per session before your first spawn. It maps every Cursor mechanism below (Task, models, cloud agents, transcripts, control skills) onto Claude Code. Sibling pstack skills, including every `principle-*` leaf, live at `<this skill's base directory>/../<name>/SKILL.md`. Read them by path, because most of them block the Skill tool.
-
-**Running in Claude Code.** Read `poteto-mode/references/claude-code-runtime.md` once per session before your first spawn. It maps every Cursor mechanism below (Task, models, cloud agents, transcripts, control skills) onto Claude Code. Sibling pstack skills, including every `principle-*` leaf, live at `<this skill's base directory>/../<name>/SKILL.md`. Read them by path, because most of them block the Skill tool.
-
 ## Non-negotiables
 
 The Principles section below grounds every trigger. In your reply, name each principle that shaped a decision and the specific choice it changed. Cite only principles whose leaf SKILL.md you read this session.
@@ -99,8 +91,6 @@ Read the leaf skill in full for any principle you apply. Each entry names when i
 **Use `subagent_type: "pstack:poteto-agent"` for any subagent you spawn inside a playbook step** (code-writing delegates, ad-hoc helpers). `/poteto-mode` and `poteto-agent` route through the same wrapper. Routed workflow skills (`how`, `why`, `interrogate`, `reflect`, `swarm`) set their own `subagent_type` for diverse-model review. Respect what the skill prescribes, don't override to `poteto-agent`.
 
 **Defaults for every `Agent` call.** `run_in_background: true`, file pointers not inlined context, explicit model per role (configurable via `/setup-pstack`. Defaults `sonnet` for code, `opus` for prose and judgment, and `codex` for the cross-family seat on panels). Code delegates tier by difficulty. The hardest changes (cross-cutting design, gnarly concurrency, subtle algorithms) go to your strongest judgment model (`opus`), whether the task needs judgment on vague intent or is a precisely specified sequence of steps to execute to the letter. Trivial mechanical edits go to your fast code model. Per-role lines in the `/setup-pstack` rule override these defaults and the model choices in the routed skills (`how`, `why`, `arena`, `swarm`, `architect`, `interrogate`, `reflect`). A role with no line keeps its default, and a role line of `inherit` runs that role on the parent chat model (omit `model`). Each code playbook's configured model comes from its line (`feature, refactoring`, `bug-fix`, `perf-issue`, or `hillclimb`), and the hardest changes read `hardest tasks`. Prose and judgment read `judgment and prose`.
-
-Pass the absolute pstack plugin root (two levels above this skill's base directory) in every `pstack:poteto-agent` brief.
 
 Pass the absolute pstack plugin root (two levels above this skill's base directory) in every `pstack:poteto-agent` brief.
 

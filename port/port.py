@@ -68,7 +68,10 @@ def port_text(text: str) -> str:
 
 def main() -> None:
     root = pathlib.Path(sys.argv[1])
+    owned = {"skills/setup-pstack/SKILL.md", "skills/poteto-mode/references/claude-code-runtime.md"}
     for path in sorted(root.glob("skills/**/*.md")) + sorted(root.glob("agents/*.md")):
+        if str(path.relative_to(root)) in owned:
+            continue
         before = path.read_text()
         after = port_text(before)
         if after != before:
