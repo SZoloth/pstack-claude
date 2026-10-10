@@ -45,7 +45,7 @@ Write `~/.claude/rules/pstack-models.md`. Overwrite the whole file so re-runs st
 
 pstack skills read this file for per-role models. One line per role. Delete a line to fall back to the skill default.
 Values: fable | opus | sonnet | haiku | codex | inherit, with an optional effort suffix (opus:xhigh).
-`codex` runs through the Codex CLI via a thin wrapper agent. `inherit` runs on the session's model (omit `model`).
+`codex` runs as a background Bash job via skills/poteto-mode/scripts/codex-seat.sh. `inherit` runs on the session's model (omit `model`).
 Spawn mechanics: poteto-mode/references/claude-code-runtime.md in the pstack plugin.
 
 budget: large (xhigh)

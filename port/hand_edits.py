@@ -44,7 +44,7 @@ EDITS = [
      "`run_in_background: true`, file pointers not inlined context, explicit model per role (configurable via `/setup-pstack`. Defaults `sonnet` for code, `opus` for prose and judgment, and `codex` for the cross-family seat on panels)."),
     ("skills/poteto-mode/SKILL.md",
      "a role line of `inherit-parent` or `auto` runs that role on the parent chat model (omit Task `model`)",
-     "a role line of `inherit` runs that role on the parent chat model (omit `model`)"),
+     "a role line of `inherit` runs that role on the parent chat model. Resolve every role value per **Parsing a role value** in `poteto-mode/references/claude-code-runtime.md`"),
     ("skills/poteto-mode/SKILL.md", "from a transcript, cloud-agent URL, or pushed branch",
      "from a transcript, remote session, or pushed branch"),
 
@@ -76,7 +76,7 @@ EDITS = [
     ("skills/swarm/SKILL.md", "Use `environment: \"local\"` only when the worker needs access to something on the user's computer.",
      "Drop `isolation` for a read-only worker that writes nothing. Use `isolation: \"remote\"` only when the session offers it and the worker needs nothing on this machine."),
     ("skills/swarm/SKILL.md", "When a worker must start from a non-default pushed branch, pass `cloud_base_branch`.",
-     "When a worker must start from a non-default pushed branch, its brief's first step is `git fetch origin <branch> && git switch --detach origin/<branch>` in its worktree."),
+     "When a worker must start from a non-default pushed branch, its brief's first step is `git fetch origin <branch> && git switch -C <worker-branch> origin/<branch>` in its worktree."),
     ("skills/reflect/SKILL.md",
      "For each candidate, read the first JSONL line and check that `message.content[0].text` contains the conversation's opening user prompt.",
      "For each candidate, find the first record with `\"type\":\"user\"` (see **Transcripts** in `poteto-mode/references/claude-code-runtime.md`) and check that it contains the conversation's opening user prompt."),

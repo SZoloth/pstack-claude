@@ -29,7 +29,7 @@ Open a todolist with one entry per phase before launching anything.
 
 Spawn all N workers in one message with `subagent_type: general-purpose`, `isolation: "worktree"`, `run_in_background: true`, and the step 4 model, resolved per **Parsing a role value**. Drop `isolation` for a read-only worker that writes nothing. Use `isolation: "remote"` only when the session offers it and the worker needs nothing on this machine.
 
-When a worker must start from a non-default pushed branch, its brief's first step is `git fetch origin <branch> && git switch --detach origin/<branch>` in its worktree.
+When a worker must start from a non-default pushed branch, its brief's first step is `git fetch origin <branch> && git switch -C <worker-branch> origin/<branch>` in its worktree.
 
 Every brief stands alone. Include the goal, scope, exact slice or race arm, how to verify, and what to report. Reports use `PASS`, `ISSUES`, or `BLOCKED` with evidence. A worker that can prove a defect reports `ISSUES` and lists every issue it can prove, not only the first.
 

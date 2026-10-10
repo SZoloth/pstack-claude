@@ -9,7 +9,7 @@ pstack is a Claude Code plugin. Its skills are namespaced: the user types `/psta
 Most pstack skills set `disable-model-invocation: true`, so the Skill tool will not load them. Read them by path instead, and where a skill says "run `/x`", read `<pstack-root>/skills/x/SKILL.md` and follow it. When a skill loads, Claude Code prints its base directory. `<pstack-root>` is `<base directory>/../..`. If you have no base directory (for example, inside a subagent), get it with:
 
 ```bash
-python3 -c "import json,os;d=json.load(open(os.path.expanduser('~/.claude/plugins/installed_plugins.json')));print(next(v[0]['installPath'] for k,v in d['plugins'].items() if k.startswith('pstack@')))"
+python3 -c "import json,os;d=json.load(open(os.path.expanduser('~/.claude/plugins/installed_plugins.json')))['plugins'];e=sorted((i for k,v in d.items() if k.startswith('pstack@') for i in v),key=lambda i:i.get('scope')!='user');print(e[0]['installPath'] if e else 'PSTACK_NOT_INSTALLED')"
 ```
 
 When you spawn a subagent that must read pstack files, pass it the absolute `<pstack-root>` in the brief.
@@ -31,7 +31,7 @@ Cursor's `Task` tool is Claude Code's `Agent` tool. Map the fields this way:
 | `run_in_background: true` | Same field. You are notified when the agent finishes. Do not poll. |
 | `environment: "cloud"` | `isolation: "worktree"` for an isolated checkout on this machine. Use `isolation: "remote"` only when the session offers it and the worker needs nothing local. |
 | `environment: "local"` | Omit `isolation`. |
-| `cloud_base_branch` | The worker's first step is `git fetch origin <branch> && git switch --detach origin/<branch>` in its worktree. A plain checkout fails when the branch is checked out elsewhere. |
+| `cloud_base_branch` | The worker's first step is `git fetch origin <branch> && git switch -C <worker-branch> origin/<branch>` in its worktree, with a worker-branch name of its own. A plain checkout of `<branch>` fails when that branch is checked out elsewhere. |
 | Resume an agent | `SendMessage` to the agent's name or id. |
 
 "Cloud agent" in a skill means an isolated worker. In Claude Code that is a background `Agent` with `isolation: "worktree"`. A worktree worker shares this machine's CPU, so cap a fan-out at about 6 concurrent workers and queue the rest.
@@ -54,7 +54,7 @@ Every skill that reads a role line resolves its value this way. Never pass the r
 2. `inherit`, `inherit-parent`, or `auto`: omit `model`.
 3. `codex`: run a Codex seat, passing the effort to the script.
 4. Anything else: `model: "<name>"`.
-5. If there is an effort, pass it as the `Agent` tool's `effort` field. The rule file counts as the user's explicit instruction to set it.
+5. For an `Agent` spawn with an effort, pass it as the `effort` field. (A `codex` seat takes the effort as a script argument instead.) The rule file counts as the user's explicit instruction to set it.
 
 Skill defaults carry no effort suffix, so they run at the session's effort.
 
@@ -65,14 +65,14 @@ A **different model family** means `claude` versus `gpt`. Opus versus Sonnet is 
 A Codex seat is not a subagent. Run it yourself, in the same message as the panel's other spawns:
 
 1. Write the seat's full prompt to a file in your scratchpad.
-2. Run this with Bash, `run_in_background: true`:
+2. Run this with Bash, `run_in_background: true`, `timeout: 600000`:
    ```bash
    <pstack-root>/skills/poteto-mode/scripts/codex-seat.sh <read-only|workspace-write> <dir> <effort or -> <prompt-file> <out-file>
    ```
    Use `read-only` for reviewers, judges, explorers, and investigators. Use `workspace-write` for a writer, and point `<dir>` at that writer's own worktree (`git worktree add`).
 3. You are notified when it exits. Its output is the seat's report.
 
-The script stops on Codex's output file, not on process exit, because Codex can keep running after it has answered. It caps a run at 25 minutes (`CODEX_SEAT_TIMEOUT`).
+The script stops on Codex's output file, not on process exit, because Codex can keep running after it has answered. It caps a run at 9 minutes (`CODEX_SEAT_TIMEOUT`, in seconds), just under the Bash tool's 10-minute limit. If the harness kills it anyway, it still prints `CODEX_SEAT_LOST`.
 
 If the output starts with `CODEX_SEAT_LOST`, rerun that seat as an `opus` `Agent` and say in the reply that the panel lost its cross-family seat and why. Never fall back silently. After a Codex writer finishes, run `git status` in its worktree. Codex can create files or commits you did not ask for.
 
