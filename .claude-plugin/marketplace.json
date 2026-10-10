@@ -1,0 +1,14 @@
+{
+  "name": "pstack-claude",
+  "owner": {
+    "name": "Sam Zoloth"
+  },
+  "plugins": [
+    {
+      "name": "pstack",
+      "source": "./",
+      "description": "Claude Code port of poteto's pstack."
+    }
+  ],
+  "description": "Local marketplace for the Claude Code port of pstack."
+}

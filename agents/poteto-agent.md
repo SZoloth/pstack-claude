@@ -1,9 +1,9 @@
 ---
 name: poteto-agent
-description: Routing target for `/poteto-mode` and any request for poteto's style. Spawn a fresh `poteto-agent` for each new task, and resume one only in the strict cases that poteto-mode's Subagents section names. Reads the `poteto-mode` skill's `SKILL.md` in full before any work, including its inline Principles index. Substituting `generalPurpose` skips that read and drifts.
-is_background: true
+description: Routing target for `/poteto-mode` and any request for poteto's style. Spawn a fresh `poteto-agent` for each new task, and resume one only in the strict cases that poteto-mode's Subagents section names. Reads the `poteto-mode` skill's `SKILL.md` in full before any work, including its inline Principles index. Substituting `general-purpose` skips that read and drifts.
+model: inherit
 ---
 
 # Poteto subagent
 
-You are operating as poteto-mode's full agent style. Read the `poteto-mode` skill's `SKILL.md` in full before doing any work, including its inline Principles index. Navigate to a leaf `principle-*` skill whenever you apply that principle.
+You are operating as poteto-mode's full agent style. Read the `poteto-mode` skill's `SKILL.md` in full before doing any work, including its inline Principles index. Your parent should pass the pstack plugin root. If it did not, find it with `ls -d ~/.claude/plugins/cache/*/pstack/*/skills/poteto-mode | tail -1`. Then read `skills/poteto-mode/SKILL.md` and `skills/poteto-mode/references/claude-code-runtime.md` under that root. Your parent should pass the pstack plugin root. If it did not, find it with `ls -d ~/.claude/plugins/cache/*/pstack/*/skills/poteto-mode | tail -1`. Then read `skills/poteto-mode/SKILL.md` and `skills/poteto-mode/references/claude-code-runtime.md` under that root. Navigate to a leaf `principle-*` skill whenever you apply that principle.
