@@ -11,7 +11,7 @@ git -C "$tmp/src" sparse-checkout set pstack
 up="$tmp/src/pstack"
 
 # Files this port owns outright.
-keep=(skills/setup-pstack/SKILL.md skills/poteto-mode/references/claude-code-runtime.md)
+keep=(skills/setup-pstack/SKILL.md skills/poteto-mode/references/claude-code-runtime.md skills/poteto-mode/scripts/codex-seat.sh)
 for f in "${keep[@]}"; do cp "$root/$f" "$tmp/$(echo "$f" | tr / _)"; done
 
 rsync -a --delete --exclude make-bot-ui "$up/skills/" "$root/skills/"

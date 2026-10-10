@@ -42,7 +42,7 @@ Launch all reviewers in a single message using the Agent tool. Use the `interrog
 
 For each reviewer:
 - `subagent_type`: `general-purpose`
-- `model`: the configured `interrogate reviewers` entry, or the table default with no configured line. For an `auto` or `inherit-parent` entry, omit `model` so that reviewer runs on the parent model.
+- `model`: the configured `interrogate reviewers` entry, or the table default with no configured line. Resolve it per **Parsing a role value** in `poteto-mode/references/claude-code-runtime.md`.
 - read-only: say so in the brief (no edits, no writes)
 
 Spawn a `codex` entry as a Codex seat per **Model values** in `poteto-mode/references/claude-code-runtime.md`. If an entry is invalid, run that reviewer on the table default of its family (`claude` or `gpt`) and say so. If Codex is not installed, Reviewer B runs on `opus` and the reply says the panel lost its cross-family seat. Do not block the review on a model issue.

@@ -4,7 +4,7 @@
 Usage: python3 port/port.py <plugin-root>
 
 Only safe, context-free rewrites live here. Hand edits (model panels, cloud
-agents, Cursor-only features) are listed in port/PORTING.md and must be
+agents, Cursor-only features) live in port/hand_edits.py and must be
 re-applied after a re-port.
 """
 import pathlib
@@ -42,6 +42,16 @@ LITERAL = [
     ("Cursor restart", "Claude Code restart"),
     ("Cursor's Plan Mode", "Claude Code's plan mode"),
     ('environment: "cloud"', 'isolation: "worktree"'),
+    # Role values carry effort suffixes and a `codex` value; route every resolution through one rule.
+    ("Set `model` to that line's value, or to the default if the rule or the line is missing. Leave `model` unset when the value is `auto` or `inherit-parent`.",
+     "Resolve that line's value, or the default if the rule or the line is missing, per **Parsing a role value** in `poteto-mode/references/claude-code-runtime.md`. Never pass a raw value to `model`."),
+    ("For an `auto` or `inherit-parent` entry, omit `model` so that reviewer runs on the parent model.",
+     "Resolve it per **Parsing a role value** in `poteto-mode/references/claude-code-runtime.md`."),
+    ("An `auto` or `inherit-parent` entry in this line or the cross-judge line means the parent model, so omit `model` for it.",
+     "Resolve each entry in this line and the cross-judge line per **Parsing a role value** in `poteto-mode/references/claude-code-runtime.md`."),
+    ("For `auto` or `inherit-parent`, omit `model` so the workers run on the parent model.",
+     "Resolve it per **Parsing a role value** in `poteto-mode/references/claude-code-runtime.md`."),
+    (", left unset for `auto` or `inherit-parent`", ", resolved per **Parsing a role value**"),
     ("grok-4.7-xhigh-fast", "sonnet"),
     ("grok-4.7-medium-fast", "sonnet"),
 ]

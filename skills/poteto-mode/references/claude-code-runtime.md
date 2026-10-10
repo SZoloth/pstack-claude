@@ -6,13 +6,15 @@ pstack was written for Cursor. This file maps every Cursor mechanism the skills 
 
 pstack is a Claude Code plugin. Its skills are namespaced: the user types `/pstack:how`, `/pstack:poteto-mode`, and so on. A bare `/how` works only when no other skill has that name.
 
-Most pstack skills set `disable-model-invocation: true`, so the Skill tool will not load them. Read them by path instead. When a skill loads, Claude Code prints its base directory. Every sibling skill lives at `<base directory>/../<skill-name>/SKILL.md`, and the plugin root is `<base directory>/../..`. If you have no base directory (for example, inside a subagent), locate the root with:
+Most pstack skills set `disable-model-invocation: true`, so the Skill tool will not load them. Read them by path instead, and where a skill says "run `/x`", read `<pstack-root>/skills/x/SKILL.md` and follow it. When a skill loads, Claude Code prints its base directory. `<pstack-root>` is `<base directory>/../..`. If you have no base directory (for example, inside a subagent), get it with:
 
 ```bash
-dirname "$(dirname "$(ls -d ~/.claude/plugins/cache/*/pstack/*/skills/poteto-mode 2>/dev/null | tail -1)")"
+python3 -c "import json,os;d=json.load(open(os.path.expanduser('~/.claude/plugins/installed_plugins.json')));print(next(v[0]['installPath'] for k,v in d['plugins'].items() if k.startswith('pstack@')))"
 ```
 
-When you spawn a subagent that must read pstack files, pass it the absolute plugin root in the brief.
+When you spawn a subagent that must read pstack files, pass it the absolute `<pstack-root>` in the brief.
+
+Paths in skills and playbooks are relative to pstack, never to the user's repo. `pstack/skills/...` means `<pstack-root>/skills/...`. `scripts/...` inside a poteto-mode playbook means `<pstack-root>/skills/poteto-mode/scripts/...`. A step that says `git show origin/main:pstack/<path>` means read `<pstack-root>/<path>`.
 
 ## Spawning subagents
 
@@ -29,7 +31,7 @@ Cursor's `Task` tool is Claude Code's `Agent` tool. Map the fields this way:
 | `run_in_background: true` | Same field. You are notified when the agent finishes. Do not poll. |
 | `environment: "cloud"` | `isolation: "worktree"` for an isolated checkout on this machine. Use `isolation: "remote"` only when the session offers it and the worker needs nothing local. |
 | `environment: "local"` | Omit `isolation`. |
-| `cloud_base_branch` | Tell the worker to `git checkout <branch>` in its worktree as its first step. |
+| `cloud_base_branch` | The worker's first step is `git fetch origin <branch> && git switch --detach origin/<branch>` in its worktree. A plain checkout fails when the branch is checked out elsewhere. |
 | Resume an agent | `SendMessage` to the agent's name or id. |
 
 "Cloud agent" in a skill means an isolated worker. In Claude Code that is a background `Agent` with `isolation: "worktree"`. A worktree worker shares this machine's CPU, so cap a fan-out at about 6 concurrent workers and queue the rest.
@@ -42,29 +44,37 @@ The `~/.claude/rules/pstack-models.md` rule (written by `/pstack:setup-pstack`) 
 |---|---|---|
 | `fable`, `opus`, `sonnet`, `haiku` | claude | `Agent` with that `model`. |
 | `inherit` (also `inherit-parent`, `auto`) | parent's | `Agent` with `model` omitted. |
-| `codex` | gpt | A thin `Agent` wrapper (`model: "sonnet"`) that runs the Codex CLI and returns its output. See **Codex seats**. |
+| `codex` | gpt | A background Bash job running `codex-seat.sh`, not an `Agent`. See **Codex seats**. |
 
-A value may carry an effort suffix, such as `opus:xhigh` or `codex:high`. Pass the suffix as the `Agent` tool's `effort` field (the rule file counts as the user's explicit instruction to set it). For a `codex` seat, pass it as `-c model_reasoning_effort=<effort>` (Codex accepts `minimal`, `low`, `medium`, `high`, `xhigh`; map `max` to `xhigh`).
+### Parsing a role value
+
+Every skill that reads a role line resolves its value this way. Never pass the raw value to `model`.
+
+1. Split `name[:effort]` on the colon. `opus:xhigh` is name `opus`, effort `xhigh`.
+2. `inherit`, `inherit-parent`, or `auto`: omit `model`.
+3. `codex`: run a Codex seat, passing the effort to the script.
+4. Anything else: `model: "<name>"`.
+5. If there is an effort, pass it as the `Agent` tool's `effort` field. The rule file counts as the user's explicit instruction to set it.
+
+Skill defaults carry no effort suffix, so they run at the session's effort.
 
 A **different model family** means `claude` versus `gpt`. Opus versus Sonnet is the same family. Panels (`arena`, `architect`, `interrogate`), cross-judges, and "verify on a different model family" steps need one seat from each family when both are available.
 
-If `command -v codex` fails, a `codex` seat falls back to `opus` and you say in the reply that the panel lost its cross-family seat. Never fall back silently.
-
 ### Codex seats
 
-Spawn a `codex` seat as an `Agent` with `subagent_type: "general-purpose"`, `model: "sonnet"`, `effort: "low"`, and this brief:
+A Codex seat is not a subagent. Run it yourself, in the same message as the panel's other spawns:
 
-```
-You are a thin wrapper around the Codex CLI. Do not do the task yourself.
-1. Write the task below, verbatim, to a temp file.
-2. Run: codex exec <SANDBOX> -C <REPO_OR_WORKTREE> -o <OUT_FILE> [-c model_reasoning_effort=<EFFORT>] "$(cat <TEMP_FILE>)"
-   Use a timeout of 600000 ms and run it in the background if it may run longer.
-3. Return the contents of <OUT_FILE> verbatim, then one line with the exit code.
-TASK:
-<the seat's full prompt>
-```
+1. Write the seat's full prompt to a file in your scratchpad.
+2. Run this with Bash, `run_in_background: true`:
+   ```bash
+   <pstack-root>/skills/poteto-mode/scripts/codex-seat.sh <read-only|workspace-write> <dir> <effort or -> <prompt-file> <out-file>
+   ```
+   Use `read-only` for reviewers, judges, explorers, and investigators. Use `workspace-write` for a writer, and point `<dir>` at that writer's own worktree (`git worktree add`).
+3. You are notified when it exits. Its output is the seat's report.
 
-`<SANDBOX>` is `-s read-only` for reviewers, judges, explorers, and investigators. It is `--full-auto` for a writer, and a writer always runs in its own worktree. After any Codex writer finishes, run `git status` in its worktree. Codex can create files or commits you did not ask for.
+The script stops on Codex's output file, not on process exit, because Codex can keep running after it has answered. It caps a run at 25 minutes (`CODEX_SEAT_TIMEOUT`).
+
+If the output starts with `CODEX_SEAT_LOST`, rerun that seat as an `opus` `Agent` and say in the reply that the panel lost its cross-family seat and why. Never fall back silently. After a Codex writer finishes, run `git status` in its worktree. Codex can create files or commits you did not ask for.
 
 ## Asking the user
 
@@ -76,7 +86,7 @@ Where a skill says "open a todo list", use Claude Code's task or todo tool if th
 
 ## Transcripts
 
-Claude Code stores each session as `~/.claude/projects/<slug>/<session-id>.jsonl`. `<slug>` is the absolute working directory with every `/` and `.` replaced by `-`, so `/Users/you/proj` becomes `-Users-you-proj`. Subagent transcripts live under `<slug>/<session-id>/subagents/`. The newest `.jsonl` in the directory is usually the current session.
+Claude Code stores each session as `~/.claude/projects/<slug>/<session-id>.jsonl`. `<slug>` is the absolute working directory with every `/` and `.` replaced by `-`, so `/Users/you/proj` becomes `-Users-you-proj`. Subagent transcripts live under `<slug>/<session-id>/subagents/`. The newest `.jsonl` in the directory is usually the current session. Each line is one JSON record. The first line is often bookkeeping (`"type":"queue-operation"`), so find the opening prompt in the first record with `"type":"user"`, under `message.content` (a string, or a list whose `text` items hold the prompt).
 
 ```bash
 proj=~/.claude/projects/$(pwd | sed 's#[/.]#-#g')

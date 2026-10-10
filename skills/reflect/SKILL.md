@@ -25,13 +25,13 @@ ls -t "$proj"/*.jsonl "$proj"/*/subagents/*.jsonl 2>/dev/null | head -10
 
 Three transcript layouts: legacy flat (`<id>.jsonl`), current nested (`<id>/<id>.jsonl`), and subagent (`<parent>/subagents/<child>.jsonl`).
 
-For each candidate, read the first JSONL line and check that `message.content[0].text` contains the conversation's opening user prompt. Take the matching path. If no path resolves, write a tight digest of the session and pass that instead.
+For each candidate, find the first record with `"type":"user"` (see **Transcripts** in `poteto-mode/references/claude-code-runtime.md`) and check that it contains the conversation's opening user prompt. Take the matching path. If no path resolves, write a tight digest of the session and pass that instead.
 
 ### 2. Spawn three reviewers in parallel
 
 One message, three `Agent` calls, `subagent_type: general-purpose`, with `model` set as below.
 
-Each reviewer and the synthesizer name a role line in the `pstack-models.md` rule and a default. Set `model` to that line's value, or to the default if the rule or the line is missing. Leave `model` unset when the value is `auto` or `inherit-parent`. Valid values, and how to spawn a `codex` value, are under **Model values** in `poteto-mode/references/claude-code-runtime.md`. If a value is invalid, use the default and say so.
+Each reviewer and the synthesizer name a role line in the `pstack-models.md` rule and a default. Resolve that line's value, or the default if the rule or the line is missing, per **Parsing a role value** in `poteto-mode/references/claude-code-runtime.md`. Never pass a raw value to `model`. Valid values, and how to spawn a `codex` value, are under **Model values** in `poteto-mode/references/claude-code-runtime.md`. If a value is invalid, use the default and say so.
 
 | Lens | Role line | Default `model` | Prompt template |
 |---|---|---|---|

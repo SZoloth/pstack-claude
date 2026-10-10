@@ -8,7 +8,7 @@ disable-model-invocation: true
 
 Explore the codebase to answer "how does X work?" questions. Produce architectural explanations at the level of a senior engineer onboarding onto a subsystem, enough to build a working mental model, not so much that it reads like annotated source code.
 
-Each spawn below names a role line in the `pstack-models.md` rule and a default. Set `model` to that line's value, or to the default if the rule or the line is missing. Leave `model` unset when the value is `auto` or `inherit-parent`. Valid values, and how to spawn a `codex` value, are under **Model values** in `poteto-mode/references/claude-code-runtime.md`. If a value is invalid, use the default and say so.
+Each spawn below names a role line in the `pstack-models.md` rule and a default. Resolve that line's value, or the default if the rule or the line is missing, per **Parsing a role value** in `poteto-mode/references/claude-code-runtime.md`. Never pass a raw value to `model`. Valid values, and how to spawn a `codex` value, are under **Model values** in `poteto-mode/references/claude-code-runtime.md`. If a value is invalid, use the default and say so.
 
 ## Step 1. Assess Complexity
 

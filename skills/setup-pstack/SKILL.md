@@ -17,7 +17,7 @@ Write `~/.claude/rules/pstack-models.md`, a rule file Claude Code loads into eve
 
 ### 2. Load current state
 
-The default role-to-model mapping is the rule shape in step 5. If `~/.claude/rules/pstack-models.md` exists, read it and treat its `# budget` line and role values as the current choices. Otherwise start from the defaults. A line whose role is not in step 5 is from a retired role. Drop it.
+The default role-to-model mapping is the rule shape in step 5. If `~/.claude/rules/pstack-models.md` exists, read it and treat its `budget:` line and role values as the current choices. Otherwise start from the defaults. A line whose role is not in step 5 is from a retired role. Drop it.
 
 ### 3. Budget, map, and confirm
 
@@ -76,4 +76,4 @@ Tell the user the rule was written and that it loads in new sessions. Re-running
 
 ### 7. Offer a verification skill (optional)
 
-Check whether the project has a way to drive the real app for proof (a `verify-*` skill under `.claude/skills/`, or an existing harness). If not, offer once: "want a project-local verification skill, so agents can drive the app the way a user does and prove changes work? I can generate one with /pstack:create-verification-skill." On yes, run it. On no, move on without pushing.
+Check whether the project has a way to drive the real app for proof (a `verify-*` skill under `.claude/skills/`, or an existing harness). If not, offer once: "want a project-local verification skill, so agents can drive the app the way a user does and prove changes work? I can generate one with /pstack:create-verification-skill." On yes, read `../create-verification-skill/SKILL.md` and follow it. On no, move on without pushing.
