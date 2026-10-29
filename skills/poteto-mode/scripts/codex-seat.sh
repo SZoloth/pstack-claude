@@ -37,7 +37,7 @@ effort_args=()
 
 rm -f "$out"
 # Written this way because macOS bash 3.2 rejects an empty "${a[@]}" under set -u.
-codex exec -s "$sandbox" -C "$dir" -o "$out" ${effort_args[@]+"${effort_args[@]}"} - <"$prompt" >"$log" 2>&1 &
+codex exec --skip-git-repo-check -s "$sandbox" -C "$dir" -o "$out" ${effort_args[@]+"${effort_args[@]}"} - <"$prompt" >"$log" 2>&1 &
 pid=$!
 
 # Codex writes -o once, at the end. It can linger after that, so stop on the file, not the exit.
