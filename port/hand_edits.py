@@ -5,7 +5,9 @@ Usage: python3 port/hand_edits.py <plugin-root>
 
 Each edit is (file, old, new). A missing `old` fails loudly, which is the
 signal that upstream changed that passage and the edit needs a human look.
-Edits already applied (new text present, old absent) are skipped.
+Edits already applied (new text present, old absent) are skipped. Removal
+edits (empty `new`) always need `old`, so run this on fresh upstream copies
+(port/sync.sh does).
 """
 import pathlib
 import sys
@@ -18,7 +20,7 @@ EDITS = [
     # --- frontmatter ---
     ("skills/poteto-mode/SKILL.md", "name: Poteto Mode\n", "name: poteto-mode\n"),
     ("skills/poteto-mode/SKILL.md",
-     "mode: true\nicon: crown\ncolor: yellow\nreminder: New task? Playbook match or rigor needed -> apply /poteto-mode. Casual turn or user opts out -> don't.\n", ""),
+     "icon: crown\ncolor: yellow\n", ""),
     ("agents/comment-sicko.md", "name: Comment Sicko\n", "name: comment-sicko\n"),
     ("agents/comment-sicko.md",
      "description: A deranged comment-hater that savors deletion and condemns workaround code.\n",
@@ -181,8 +183,6 @@ def main() -> None:
             continue
         if old in text:
             path.write_text(text.replace(old, new, 1))
-        elif not new:
-            continue
         else:
             failed.append((rel, old[:90]))
     for rel, old in failed:
