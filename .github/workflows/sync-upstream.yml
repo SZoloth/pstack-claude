@@ -1,0 +1,89 @@
+name: Sync upstream pstack
+
+# Daily: pull cursor/plugins pstack, re-run the port, and commit if it changed.
+# If the hand edits no longer match upstream, open (or update) an issue instead.
+on:
+  schedule:
+    - cron: "17 10 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  issues: write
+
+concurrency:
+  group: sync-upstream
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run port/sync.sh
+        id: sync
+        run: |
+          set +e
+          bash port/sync.sh > sync.log 2>&1
+          code=$?
+          set -e
+          cat sync.log
+          echo "code=$code" >> "$GITHUB_OUTPUT"
+          echo "upstream=$(sed -n 's/^upstream version: //p' sync.log | tail -1)" >> "$GITHUB_OUTPUT"
+
+      - name: Open an issue when the port breaks
+        if: steps.sync.outputs.code != '0'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          title="Upstream sync failed: hand edits need updating"
+          {
+            echo "port/sync.sh exited ${{ steps.sync.outputs.code }} on $(date -u +%F)."
+            echo "Each MISSING line is a hand edit whose upstream text changed. Update it in port/hand_edits.py."
+            echo
+            echo '```'
+            grep -E 'MISSING|Error|Traceback|upstream version' sync.log | head -60
+            echo '```'
+            echo
+            echo "Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          } > body.md
+          existing=$(gh issue list --state open --search "$title in:title" --json number --jq '.[0].number')
+          if [ -n "$existing" ]; then
+            gh issue comment "$existing" --body-file body.md
+          else
+            gh issue create --title "$title" --body-file body.md
+          fi
+          exit 1
+
+      - name: Commit if anything changed
+        if: steps.sync.outputs.code == '0'
+        env:
+          UPSTREAM: ${{ steps.sync.outputs.upstream }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          rm -f sync.log
+          for n in $(gh issue list --state open --search "Upstream sync failed in:title" --json number --jq '.[].number'); do
+            gh issue close "$n" --comment "Sync passes again as of $(date -u +%F)."
+          done
+          if git diff --quiet && [ -z "$(git ls-files --others --exclude-standard)" ]; then
+            echo "Already current with upstream $UPSTREAM."
+            exit 0
+          fi
+          python3 - <<'PY'
+          import json, os, re
+          p = ".claude-plugin/plugin.json"
+          d = json.load(open(p))
+          up = os.environ["UPSTREAM"]
+          m = re.fullmatch(re.escape(up) + r"-claude\.(\d+)", d["version"])
+          d["version"] = f"{up}-claude.{int(m.group(1)) + 1 if m else 1}"
+          json.dump(d, open(p, "w"), indent=2)
+          open(p, "a").write("\n")
+          print("version ->", d["version"])
+          PY
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "chore: sync upstream pstack $UPSTREAM"
+          git push
