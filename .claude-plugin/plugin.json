@@ -1,6 +1,6 @@
 {
   "name": "pstack",
-  "version": "0.15.15-claude.3",
+  "version": "0.15.36-claude.1",
   "description": "Claude Code port of poteto's pstack: rigorous agent workflows (poteto-mode playbooks, how/why, arena, swarm, interrogate, principles). Cross-family review seats run through the Codex CLI.",
   "author": {
     "name": "Lauren Tan (upstream); Claude Code port by Sam Zoloth"
