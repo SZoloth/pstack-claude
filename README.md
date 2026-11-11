@@ -1,11 +1,11 @@
 # pstack for Claude Code
 
-A Claude Code port of [poteto's pstack](https://github.com/cursor/plugins/tree/main/pstack) (upstream 0.15.15, MIT). pstack is a set of rigorous agent workflows: `poteto-mode` routes a task to one of 23 playbooks (bug fix, feature, perf, refactor, babysit a PR, overnight runs), and runs review panels, parallel fan-outs, and 24 one-rule principle skills as the steps need them.
+A Claude Code port of [poteto's pstack](https://github.com/cursor/plugins/tree/main/pstack) (upstream 0.15.36, MIT). pstack is a set of rigorous agent workflows: `poteto-mode` routes a task to one of 23 playbooks (bug fix, feature, perf, refactor, babysit a PR, overnight runs), and runs review panels, parallel fan-outs, and 24 one-rule principle skills as the steps need them.
 
 ## Install
 
 ```bash
-claude plugin marketplace add ~/Projects/pstack-claude
+claude plugin marketplace add SZoloth/pstack-claude
 claude plugin install pstack@pstack-claude
 ```
 
@@ -32,6 +32,10 @@ Unsure which skill fits? `/pstack:poteto-help`.
 The full mapping that the skills read at run time is [`skills/poteto-mode/references/claude-code-runtime.md`](skills/poteto-mode/references/claude-code-runtime.md). The guide under `docs/guide/` is upstream's and still describes Cursor mechanics.
 
 ## Updating from upstream
+
+A GitHub Action (`.github/workflows/sync-upstream.yml`) runs the sync below every day and commits the result when it passes. If upstream rewrote a passage that a hand edit depends on, the Action opens an issue listing the MISSING edits instead. Fix those in `port/hand_edits.py`.
+
+To run it by hand:
 
 ```bash
 port/sync.sh
