@@ -16,7 +16,7 @@ for f in "${keep[@]}"; do cp "$root/$f" "$tmp/$(echo "$f" | tr / _)"; done
 
 rsync -a --delete --exclude make-bot-ui "$up/skills/" "$root/skills/"
 rsync -a --delete "$up/agents/" "$root/agents/"
-rsync -a --delete "$up/docs/" "$root/docs/"
+rsync -a --delete --exclude research "$up/docs/" "$root/docs/"
 
 for f in "${keep[@]}"; do cp "$tmp/$(echo "$f" | tr / _)" "$root/$f"; done
 
